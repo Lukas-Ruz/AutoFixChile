@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Inicio de Sesión</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="../style.css" />
+  </head>
+  <body>
+    <!-- Barra de navegacion principal -->
+    <div class="container-fluid" style="background-color: rgb(144, 144, 179)">
+      <ul class="nav">
+        <a class="link" href="../index.html">
+          <img src="../img/logo.png" height="40" alt="logo" style="margin: 5px"
+        /></a>
+        <a
+          class="link"
+          href="../index.html"
+          style="color: black; text-decoration: none"
+        >
+          <h1 class="title">
+            <strong> AutoFixChile </strong>
+          </h1></a
+        >
+      </ul>
+    </div>
+    <!-- Formulario -->
+    <div
+      class="container mt-5"
+      style="
+        background-color: white;
+        border-radius: 5px;
+        height: 50rem;
+        max-width: 600px;
+      "
+    >
+      <h2 style="text-align: center">Inicio de Sesión</h2>
+      <form id="loginForm" novalidate>
+        <div class="mb-3">
+          <label for="runLogin" class="form-label">RUN</label>
+          <input
+            type="text"
+            class="form-control"
+            id="runLogin"
+            name="runLogin"
+            placeholder="12345678-9"
+            required
+          />
+          <div class="invalid-feedback">Formato RUN inválido (12345678-9)</div>
+        </div>
+        <div class="mb-3">
+          <label for="contraseñaLogin" class="form-label">Contraseña</label>
+          <input
+            type="password"
+            class="form-control"
+            id="contraseñaLogin"
+            name="contraseñaLogin"
+            required
+          />
+          <div class="invalid-feedback">Por favor ingresa tu contraseña.</div>
+        </div>
+        <button type="submit" class="btn btn-primary">Ingresar</button>
+      </form>
+      <a href="recuperar.html">Recuperar contraseña</a>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+      $(document).ready(function () {
+        $("#loginForm").on("submit", function (e) {
+          e.preventDefault();
+
+          // Limpiar estados previos
+          $("input").removeClass("is-invalid");
+
+          let valido = true;
+
+          // Validar RUN
+          const runVal = $("#runLogin").val().trim();
+          const runRegex = /^\d{7,8}-[0-9kK]$/;
+          if (!runRegex.test(runVal)) {
+            $("#runLogin").addClass("is-invalid");
+            valido = false;
+          }
+
+          // Validar contraseña
+          if (!$("#contraseñaLogin").val()) {
+            $("#contraseñaLogin").addClass("is-invalid");
+            valido = false;
+          }
+
+          if (valido) {
+            alert("Inicio de sesión exitoso");
+            this.submit();
+            window.location.href = "../index.html";
+          }
+        });
+      });
+    </script>
+  </body>
+</html>
