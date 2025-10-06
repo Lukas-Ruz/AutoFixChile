@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+    <!-- Mensajes -->
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <!-- Errores generales -->
+    {% if form.non_field_errors %}
+        <div class="alert alert-danger">{{ form.non_field_errors }}</div>
+    {% endif %}
+
+    <div class="container mt-5" style="background-color: white; border-radius: 5px; height: 50rem; max-width: 600px;">
+        <h2 style="text-align: center">Recuperar Contraseña</h2>
+        <p style="text-align: center;">Ingresa tu RUN y email para recibir un enlace de restablecimiento.</p>
+        <form id="recuperarForm" method="POST" action="{% url 'Recuperar' %}" novalidate>
+            {% csrf_token %}
+            
+            <!-- RUN -->
+            <div class="mb-3">
+                <label for="{{ form.run.id_for_label }}" class="form-label">{{ form.run.label }}</label>
+                {{ form.run }}
+                {% if form.run.errors %}
+                    <div class="invalid-feedback d-block">{{ form.run.errors }}</div>
+                {% endif %}
+                <div class="invalid-feedback">Formato RUN inválido (12345678-9).</div>
+            </div>
+
+            <!-- Email -->
+            <div class="mb-3">
+                <label for="{{ form.email.id_for_label }}" class="form-label">{{ form.email.label }}</label>
+                {{ form.email }}
+                {% if form.email.errors %}
+                    <div class="invalid-feedback d-block">{{ form.email.errors }}</div>
+                {% endif %}
+                <div class="invalid-feedback">Ingresa un email válido asociado a tu cuenta.</div>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Enviar Enlace de Recuperación</button>
+        </form>
+        <div style="text-align: center; margin-top: 20px;">
+            <a href="{% url 'Login' %}">Volver al Login</a>
+        </div>
+    </div>
+{% endblock content %}
+
+{% block extraScript %}
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            $("#recuperarForm").on("submit", function (e) {
+                // No preventDefault: Deja que Django maneje, pero valida frontend
+                let valido = true;
+
+                // Limpiar errores
+                $("input").removeClass("is-invalid");
+
+                // Validar RUN
+                const runVal = $("#{{ form.run.id_for_label }}").val().trim();
+                const runRegex = /^\d{7,8}-[0-9kK]$/;
+                if (!runRegex.test(runVal)) {
+                    $("#{{ form.run.id_for_label }}").addClass("is-invalid");
+                    valido = false;
+                }
+
+                // Validar email
+                const emailVal = $("#{{ form.email.id_for_label }}").val().trim();
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (!emailRegex.test(emailVal)) {
+                    $("#{{ form.email.id_for_label }}").addClass("is-invalid");
+                    valido = false;
+                }
+
+                if (!valido) {
+                    e.preventDefault();
+                    return false;
+                }
+                // Si válido, submit normal
+            });
+        });
+    </script>
+{% endblock extraScript %}

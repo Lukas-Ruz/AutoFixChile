@@ -1,0 +1,31 @@
+    {% extends "base.html" %}
+    {% load static %}
+
+    {% block content %}
+        <div class="container mt-5">
+            <h2 style="text-align: center;">Nuestra Ubicación</h2>
+            <div id="map" style="height: 500px; width: 100%;"></div>
+        </div>
+    {% endblock %}
+
+    {% block extraScript %}
+        <script>
+            function initMap() {
+                // Coordenadas ficticias para Santiago, Chile
+                const santiago = { lat: -33.4489, lng: -70.6693 }; 
+                
+                const map = new google.maps.Map(document.getElementById("map"), {
+                    zoom: 12,
+                    center: santiago,
+                });
+
+                new google.maps.Marker({
+                    position: santiago,
+                    map: map,
+                    title: "AutoFixChile (Ubicación Ficticia)",
+                });
+            }
+        </script>
+        <script async defer src="https://maps.googleapis.com/maps/api/js?key={{ GOOGLE_MAPS_API_KEY }}&callback=initMap"></script>
+    {% endblock %}
+    

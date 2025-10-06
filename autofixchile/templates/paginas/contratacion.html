@@ -1,0 +1,159 @@
+{% extends "base.html" %} 
+{% load static %}
+
+{% block content %} 
+
+{% if messages%} 
+{% for message in messages %}
+<div
+  class="alert alert-{{ message.tags }} alert-dismissible fade show"
+  role="alert"
+>
+  {{ message }}
+  <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+</div>
+{% endfor %}
+{% endif %} 
+
+{% if form.non_field_errors %}
+<div class="alert alert-danger alert-dismissible fade show" role="alert">
+  {{ form.non_field_errors }}
+  <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+</div>
+{% endif %}
+
+<!-- Formulario ingreso vehiculo -->
+<div
+  class="container mt-5"
+  style="
+    background-color: white;
+    border-radius: 5px;
+    height: 50rem;
+    max-width: 600px;
+  "
+>
+  <h2 style="text-align: center">Registrar Vehículo</h2>
+  <form
+    id="VehiculoForm"
+    method="POST"
+    action="{% url 'Contratacion' %}"
+    novalidate
+  >
+    {% csrf_token %}
+
+    <div class="mb-3">
+      <label for="{{ form.patente.id_for_label }}" class="form-label"
+        >{{ form.patente.label }}</label
+      >
+      {{ form.patente }} 
+      
+      {% if form.patente.errors %}
+      <div class="invalid-feedback d-block">{{ form.patente.errors }}</div>
+      {% endif %}
+      <div class="invalid-feedback">
+        Por favor ingresa la patente (6 caracteres, ej. ABC123).
+      </div>
+    </div>
+
+    <div class="mb-3">
+      <label for="{{ form.marca.id_for_label }}" class="form-label"
+        >{{ form.marca.label }}</label
+      >
+      {{ form.marca }}
+      
+      {% if form.marca.errors %}
+      <div class="invalid-feedback d-block">{{ form.marca.errors }}</div>
+      {% endif %}
+      <div class="invalid-feedback">Por favor ingresa la marca.</div>
+    </div>
+
+    <div class="mb-3">
+      <label for="{{ form.modelo.id_for_label }}" class="form-label"
+        >{{ form.modelo.label }}</label
+      >
+      {{ form.modelo }} 
+      
+      {% if form.modelo.errors %}
+      <div class="invalid-feedback d-block">{{ form.modelo.errors }}</div>
+      {% endif %}
+      <div class="invalid-feedback">Por favor ingresa el modelo.</div>
+    </div>
+
+    <div class="mb-3">
+      <label for="{{ form.fecha_encargo.id_for_label }}" class="form-label"
+        >{{ form.fecha_encargo.label }}</label
+      >
+      {{ form.fecha_encargo }} 
+      
+      {% if form.fecha_encargo.errors %}
+      <div class="invalid-feedback d-block">
+        {{ form.fecha_encargo.errors }}
+      </div>
+      {% endif %}
+      <div class="invalid-feedback">Por favor ingresa la fecha de encargo.</div>
+    </div>
+
+    <div class="mb-3">
+      <label for="{{ form.run.id_for_label }}" class="form-label"
+        >{{ form.run.label }}</label
+      >
+      {{ form.run }}
+      
+      {% if form.run.errors %}
+      <div class="invalid-feedback d-block">{{ form.run.errors }}</div>
+      {% endif %}
+      <div class="invalid-feedback">
+        Formato RUN inválido. Debe ser 00000000-0 y existir en clientes.
+      </div>
+    </div>
+
+    <div class="mb-3">
+      <label for="{{ form.nombre_cliente.id_for_label }}" class="form-label"
+        >{{ form.nombre_cliente.label }}</label
+      >
+      {{ form.nombre_cliente }}
+      
+      {% if form.nombre_cliente.errors %}
+      <div class="invalid-feedback d-block">
+        {{ form.nombre_cliente.errors }}
+      </div>
+      {% endif %}
+      <div class="form-text">Se auto-llena al ingresar RUN válido.</div>
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label">Áreas de trabajo (selecciona hasta 4)</label>
+      {{ form.areas }}
+      
+      {% if form.areas.errors %}
+      <div class="invalid-feedback d-block" id="areasError">
+        {{ form.areas.errors }}
+      </div>
+      {% endif %}
+
+      <div
+        class="invalid-feedback d-block"
+        id="areasError"
+        style="display: none"
+      >
+        Debes seleccionar al menos una área y máximo cuatro.
+      </div>
+      <small class="form-text text-muted">{{ form.areas.help_text }}</small>
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label">Mecánico a Cargo</label>
+      <input
+        type="text"
+        class="form-control"
+        value="{{ mecanico_nombre }}"
+        disabled
+        readonly
+      />
+      <small class="form-text text-muted"
+        >Auto-asignado (basado en tu sesión).</small
+      >
+    </div>
+  </form>
+</div>
+{% endblock content %}

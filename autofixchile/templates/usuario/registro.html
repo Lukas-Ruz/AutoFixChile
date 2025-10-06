@@ -1,0 +1,234 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+    <!-- Container formulario -->
+    <div
+      class="container mt-5 mb-5"
+      style="
+        background-color: white;
+        border-radius: 5px;
+        height: 50rem;
+      "
+    >
+      <h2 style="text-align: center">Registro de Usuario</h2>
+
+      {% if messages %}
+        {% for message in messages %}
+          <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+          </div>
+        {% endfor %}
+      {% endif %}
+
+      <form id="RegistroForm" method="POST" action="{% url 'Registro' %}" novalidate>
+        {% csrf_token %}
+        {% if form.non_field_errors %}
+    <div class="alert alert-danger">
+        {{ form.non_field_errors }}
+     </div>
+     {% endif %}
+
+
+        <div class="mb-3">
+          <label for="run" class="form-label">RUN</label>
+          <input
+            type="text"
+            class="form-control"
+            id="run"
+            name="run"
+            placeholder=" Formato 12345678-9"
+            required
+          />
+          <div class="invalid-feedback">Formato RUN inválido (12345678-9)</div>
+        </div>
+
+        <div class="mb-3">
+          <label for="nombre" class="form-label">Nombre</label>
+          <input
+            type="text"
+            class="form-control"
+            id="nombre"
+            name="nombre"
+            required
+          />
+          <div class="invalid-feedback">Por favor ingrese su nombre.</div>
+        </div>
+
+        <div class="mb-3">
+          <label for="apellido" class="form-label">Apellido</label>
+          <input
+            type="text"
+            class="form-control"
+            id="apellido"
+            name="apellido"
+            required
+          />
+          <div class="invalid-feedback">Por favor ingrese su apellido.</div>
+        </div>
+
+        <div class="mb-3">
+          <label for="email" class="form-label">Email</label>
+          <input
+            type="email"
+            class="form-control"
+            id="email"
+            name="email"
+            placeholder="ejemplo@correo.com"
+            required
+          />
+          <div class="invalid-feedback">Por favor ingrese un email válido.</div>
+        </div>
+
+        <div class="mb-3">
+          <label for="fecha_nacimiento" class="form-label">Fecha de Nacimiento</label>
+          <input
+            type="date"
+            class="form-control"
+            id="fecha_nacimiento"
+            name="fecha_nacimiento"
+            required
+          />
+          <div class="invalid-feedback">Por favor ingrese su fecha de nacimiento.</div>
+        </div>
+
+        <div class="mb-3">
+          <label for="telefono" class="form-label">Teléfono</label>
+          <input
+            type="tel"
+            class="form-control"
+            id="telefono"
+            name="telefono"
+            placeholder="ej: 9123456789"
+            required
+          />
+          <div class="invalid-feedback">Por favor ingrese su teléfono.</div>
+        </div>
+
+        <div class="mb-3">
+          <label for="direccion" class="form-label">Dirección</label>
+          <input
+            type="text"
+            class="form-control"
+            id="direccion"
+            name="direccion"
+            required
+          />
+          <div class="invalid-feedback">Por favor ingrese su dirección.</div>
+        </div>
+
+        <div class="mb-3">
+          <label for="password1" class="form-label">Contraseña</label>
+          <input
+            type="password"
+            class="form-control"
+            id="password1"
+            name="password1"
+            required
+          />
+          <div class="invalid-feedback">
+            La contraseña debe tener al menos 8 caracteres, una mayúscula, un número y un caracter especial.
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label for="password2" class="form-label">Repetir Contraseña</label>
+          <input
+            type="password"
+            class="form-control"
+            id="password2"
+            name="password2"
+            required
+          />
+          <div class="invalid-feedback">Las contraseñas no coinciden.</div>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Registrarse</button>
+        <a href="{% url 'Login' %}" class="btn btn-link">¿Ya tienes cuenta? Inicia sesión</a>
+      </form>
+    </div>
+    
+{% endblock content %}
+
+{% block extraScript  %}
+    <!-- Scripts -->
+    <script src="{% static 'js/jquery-3.7.1.min.js' %}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+      $(document).ready(function () {
+        $("#registroForm").on("submit", function (e) {
+          e.preventDefault();
+
+          // Limpiar estados previos
+          $("input").removeClass("is-invalid");
+
+          let valido = true;
+
+          // Validar RUN (primero, como en el modelo)
+          const runVal = $("#run").val().trim();
+          const runRegex = /^\d{7,8}-[0-9kK]$/;
+          if (!runRegex.test(runVal)) {
+            $("#run").addClass("is-invalid");
+            valido = false;
+          }
+
+          // Validar nombre y apellido
+          if (!$("#nombre").val().trim()) {
+            $("#nombre").addClass("is-invalid");
+            valido = false;
+          }
+          if (!$("#apellido").val().trim()) {
+            $("#apellido").addClass("is-invalid");
+            valido = false;
+          }
+
+          // Validar email (nuevo)
+          const emailVal = $("#email").val().trim();
+          const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+          if (!emailRegex.test(emailVal)) {
+            $("#email").addClass("is-invalid");
+            valido = false;
+          }
+
+          // Validar fecha de nacimiento
+          const fechaVal = $("#fecha_nacimiento").val();
+          if (!fechaVal) {
+            $("#fecha_nacimiento").addClass("is-invalid");
+            valido = false;
+          }
+
+          // Validar teléfono
+          if (!$("#telefono").val().trim()) {
+            $("#telefono").addClass("is-invalid");
+            valido = false;
+          }
+
+          // Validar dirección
+          if (!$("#direccion").val().trim()) {
+            $("#direccion").addClass("is-invalid");
+            valido = false;
+          }
+
+          // Validar contraseña
+          const password1 = $("#password1").val();
+          const passwordRegex = /^(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_\-+={}[\$|\\:;"'<>,.?/~`]).{8,}$/;
+          if (!passwordRegex.test(password1)) {
+            $("#password1").addClass("is-invalid");
+            valido = false;
+          }
+
+          const password2 = $("#password2").val();
+          if (password1 !== password2 || !password2) {
+            $("#password2").addClass("is-invalid");
+            valido = false;
+          }
+
+          if (valido) {
+            this.submit();
+          }
+        });
+      });
+    </script>
+
+{% endblock extraScript  %}
