@@ -3,111 +3,107 @@
 {% load socialaccount %}
 
 {% block content %}
-    <!-- Formulario -->
-    <div class="container mt-5" style="background-color: white; border-radius: 5px; height: 50rem; max-width: 600px;">
-        <h2 style="text-align: center">Inicio de Sesión</h2>
-
-        <!-- Mensajes de Django -->
-        {% if messages %}
+    {% if messages %}
+        <div class="container mt-3">
             {% for message in messages %}
                 <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
                     {{ message }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                 </div>
             {% endfor %}
-        {% endif %}
+        </div>
+    {% endif %}
 
-        <!-- Errores generales del form -->
-        {% if form.non_field_errors %}
-            <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                {{ form.non_field_errors }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            </div>
-        {% endif %}
-
-        <form id="loginForm" method="POST" action="{% url 'Login' %}" novalidate>
-            {% csrf_token %}
-            
-            <div class="mb-3">
-                <label for="username" class="form-label">RUN</label>
-                <input
-                    type="text"
-                    class="form-control"
-                    id="username"
-                    name="username"
-                    placeholder="12345678-9"
-                    required
-                />
-                <!-- Errores del campo username (ej. "RUN inválido") -->
-                {% if form.username.errors %}
-                    <div class="invalid-feedback d-block">
-                        {{ form.username.errors }}
+    <div class="container mt-5">
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <div class="card shadow">
+                    <div class="card-header bg-primary text-white text-center">
+                        <h4 class="mb-0">Iniciar Sesión</h4>
                     </div>
-                {% endif %}
-                <div class="invalid-feedback">Formato RUN inválido (12345678-9)</div>
-            </div>
+                    <div class="card-body p-4">
+                        <form method="post" id="loginForm">
+                            {% csrf_token %}
+                            
+                            {% if form.non_field_errors %}
+                                <div class="alert alert-danger">
+                                    {{ form.non_field_errors }}
+                                </div>
+                            {% endif %}
 
-            <div class="mb-3">
-                <label for="password" class="form-label">Contraseña</label>
-                <input
-                    type="password"
-                    class="form-control"
-                    id="password"
-                    name="password"
-                    required
-                />
-                {% if form.password.errors %}
-                    <div class="invalid-feedback d-block">
-                        {{ form.password.errors }}
+                            <div class="mb-3">
+                                <label for="{{ form.username.id_for_label }}" class="form-label fw-bold">RUN</label>
+                                <input type="text" class="form-control {% if form.username.errors %}is-invalid{% endif %}" 
+                                       id="{{ form.username.id_for_label }}" name="{{ form.username.name }}" 
+                                       placeholder="Ej: 12345678-9" value="{{ form.username.value|default:'' }}" required>
+                                {% if form.username.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.username.errors }}
+                                    </div>
+                                {% endif %}
+                                <div class="form-text">Ingresa tu RUN chileno.</div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="{{ form.password.id_for_label }}" class="form-label fw-bold">Contraseña</label>
+                                <input type="password" class="form-control {% if form.password.errors %}is-invalid{% endif %}" 
+                                       id="{{ form.password.id_for_label }}" name="{{ form.password.name }}" 
+                                       placeholder="Tu contraseña" required>
+                                {% if form.password.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.password.errors }}
+                                    </div>
+                                {% endif %}
+                            </div>
+
+                            <div class="text-center mb-4">
+                                <p class="text-muted">O inicia sesión con:</p>
+                                <a href="{% provider_login_url 'google' process='connect' %}" 
+                                   class="btn btn-danger btn-lg d-flex align-items-center justify-content-center gap-2">
+                                    {% if request.user.is_authenticated %}
+                                        <i class="bi bi-box-arrow-in-right"></i>
+                                    {% else %}
+                                        <img src="{% static 'img/googlelogo.png' %}" alt="Google" style="height: 20px; width: auto;">
+                                    {% endif %}
+                                    <span>Iniciar sesión con Google</span>
+                                </a>
+                            </div>
+
+                            <button type="submit" class="btn btn-primary w-100 mb-3">Ingresar con RUN</button>
+                            
+                            <div class="text-center">
+                                <a href="{% url 'Recuperar' %}" class="text-decoration-none">¿Olvidaste tu contraseña?</a> | 
+                                <a href="{% url 'Registro' %}" class="text-decoration-none">Crear cuenta</a>
+                            </div>
+                        </form>
                     </div>
-                {% endif %}
-                <div class="invalid-feedback">Por favor ingresa tu contraseña.</div>
+                </div>
             </div>
-                <div style="text-align: center; margin-top: 20px;">
-
-        <p>O inicia sesión con:</p>
-        <a href="{% provider_login_url 'google'
-        process='connect'%}" class="btn btn-secondary">
-            <img src="{% static 'img/googlelogo.png' %}" alt="Google" style="height: 20px; margin-right: 10px;">
-            Iniciar sesión con Google
-        </a>
-    </div>
-
-            <button type="submit" class="btn btn-primary">Ingresar</button>
-            <a href="{% url 'Recuperar' %}">Recuperar contraseña</a>
-        </form>
+        </div>
     </div>
 {% endblock content %}
 
 {% block extraScript %}
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        $(document).ready(function () {
-            $("#loginForm").on("submit", function (e) {
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            const runInput = document.querySelector('input[name="{{ form.username.name }}"]');
+            const run = runInput.value.trim();
+            const password = document.querySelector('input[name="{{ form.password.name }}"]').value;
+            
+            if (!run || !password) {
                 e.preventDefault();
-
-                // Limpiar estados previos
-                $("input").removeClass("is-invalid");
-
-                let valido = true;
-
-                // Validar RUN 
-                const runVal = $("#username").val().trim();  <!-- Cambiado de #run -->
-                const runRegex = /^\d{7,8}-[0-9kK]$/;
-                if (!runRegex.test(runVal)) {
-                    $("#username").addClass("is-invalid");  <!-- Cambiado -->
-                    valido = false;
-                }
-
-                // Validar contraseña (igual)
-                if (!$("#password").val()) {
-                    $("#password").addClass("is-invalid");
-                    valido = false;
-                }
-
-                if (valido) {
-                    this.submit(); 
-                }
-            });
+                alert('Por favor ingresa tu RUN y contraseña.');
+                return;
+            }
+            
+            const runRegex = /^\d{7,8}-?[0-9kK]?$/i;
+            if (!runRegex.test(run.replace('-', ''))) {
+                e.preventDefault();
+                alert('Formato de RUN inválido. Ejemplo: 12345678-9');
+                runInput.classList.add('is-invalid');
+                return;
+            }
         });
     </script>
 {% endblock %}
