@@ -1,31 +1,66 @@
-    {% extends "base.html" %}
-    {% load static %}
+{% extends "base.html" %}
+{% load static %}
 
-    {% block content %}
-        <div class="container mt-5">
-            <h2 style="text-align: center;">Nuestra Ubicación</h2>
-            <div id="map" style="height: 500px; width: 100%;"></div>
+{% block content %}
+    <div class="container-fluid mt-3 mb-5" style="background-color:  rgb(255, 255, 255)">
+
+        <div class="row justify-content-center">
+            <div class="col-12 col-md-8">
+                <h1 class="text-center fw-bold mb-4">Nuestra Ubicación</h1>
+                <p class="text-center text-muted">Ubicacion ficticia</p>
+            </div>
         </div>
-    {% endblock %}
+        
+        <div class="row justify-content-center">
+            <div class="col-12 col-lg-10">
+                <div id="map" class="border rounded shadow-sm" style="height: 500px; width: 100%; min-height: 300px;"></div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
 
-    {% block extraScript %}
-        <script>
-            function initMap() {
-                // Coordenadas ficticias para Santiago, Chile
-                const santiago = { lat: -33.4489, lng: -70.6693 }; 
-                
-                const map = new google.maps.Map(document.getElementById("map"), {
-                    zoom: 12,
-                    center: santiago,
-                });
-
-                new google.maps.Marker({
-                    position: santiago,
-                    map: map,
-                    title: "AutoFixChile (Ubicación Ficticia)",
-                });
+{% block extraScript %}
+    <script>
+        function initMap() {
+            const santiago = { lat: -33.4489, lng: -70.6693 }; 
+            
+            const mapElement = document.getElementById("map");
+            if (!mapElement) {
+                console.error("Elemento del mapa no encontrado.");
+                return;
             }
-        </script>
-        <script async defer src="https://maps.googleapis.com/maps/api/js?key={{ GOOGLE_MAPS_API_KEY }}&callback=initMap"></script>
-    {% endblock %}
-    
+            
+            const map = new google.maps.Map(mapElement, {
+                zoom: 12,
+                center: santiago,
+                scrollwheel: window.innerWidth > 768,
+                styles: [
+                    { featureType: "poi", elementType: "labels", stylers: [{ visibility: "off" }] }
+                ]
+            });
+
+            const marker = new google.maps.Marker({
+                position: santiago,
+                map: map,
+                title: "AutoFixChile (Ubicación Ficticia)",
+            });
+
+            const infoWindow = new google.maps.InfoWindow({
+                content: '<div><h6>AutoFixChile</h6><p>Santiago, Chile</p></div>'
+            });
+
+            marker.addListener("click", () => {
+                infoWindow.open(map, marker);
+            });
+
+            window.addEventListener('resize', () => {
+                google.maps.event.trigger(map, 'resize');
+            });
+        }
+
+        window.initMap = initMap;
+    </script>
+    <script async defer 
+            src="https://maps.googleapis.com/maps/api/js?key={{ GOOGLE_MAPS_API_KEY }}&callback=initMap&libraries=places">
+    </script>
+{% endblock %}
