@@ -135,21 +135,3 @@ class PagoAtencion(models.Model):
         db_column='ATENCION_id',
         primary_key=True
     )
-
-class UserManager(BaseUserManager):
-    def create_user(self, run, password=None, **extra_fields):
-        if not run:
-            raise ValueError('El RUN debe ser proporcionado.')
-        user = self.model(run=run, **extra_fields)
-        user.set_password(password)
-        user.save(using=self._db)
-        return user
-    def create_superuser(self, run, password=None, **extra_fields):
-        extra_fields.setdefault('is_staff', True)
-        extra_fields.setdefault('is_superuser', True)
-        extra_fields.setdefault('is_active', True)
-        if extra_fields.get('is_staff') is not True:
-            raise ValueError('Superusuario debe tener is_staff=True.')
-        if extra_fields.get('is_superuser') is not True:
-            raise ValueError('Superusuario debe tener is_superuser=True.')
-        return self.create_user(run, password, **extra_fields)
