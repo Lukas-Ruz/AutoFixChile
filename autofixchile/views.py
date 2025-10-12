@@ -215,3 +215,38 @@ def ubicacion(request):
         'GOOGLE_MAPS_API_KEY': settings.GOOGLE_MAPS_API_KEY,
     }
     return render(request, 'paginas/ubicacion.html', context)
+
+from rest_framework import viewsets, permissions
+from rest_framework.decorators import action
+from rest_framework.response import Response
+from .models import Vehiculo, Atencion
+from .serializers import VehiculoSerializer, AtencionSerializer
+
+class VehiculoViewSet(viewsets.ModelViewSet):
+    queryset = Vehiculo.objects.all()
+    serializer_class = VehiculoSerializer
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+
+    def get_queryset(self):
+        if self.request.user.is_authenticated:
+            return Vehiculo.objects.filter(usuario=self.request.user)
+        return Vehiculo.objects.none()
+
+    def perform_create(self, serializer):
+        serializer.save(usuario=self.request.user)
+
+class AtencionViewSet(viewsets.ModelViewSet):
+    queryset = Atencion.objects.all()
+    serializer_class = AtencionSerializer
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+
+    def get_queryset(self):
+        if self.request.user.is_authenticated:
+            return Atencion.objects.filter(vehiculo__usuario=self.request.user)
+        return Atencion.objects.none()
+
+    @action(detail=False, methods=['get'])
+    def disponibles(self, request):
+        servicios = Atencion.objects.filter(vehiculo__isnull=True)
+        serializer = AtencionSerializer(servicios, many=True)
+        return Response(serializer.data)
