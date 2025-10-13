@@ -1,4 +1,5 @@
 from django.shortcuts import render, redirect, get_object_or_404
+from django.views.decorators.csrf import csrf_exempt 
 from django.contrib.auth import login as auth_login, logout as auth_logout, authenticate
 from django.contrib import messages
 from .forms import RegistroForm, LoginForm, PerfilForm, VehiculoForm, RecuperarPasswordForm, ResetPasswordForm
@@ -28,44 +29,41 @@ def Servicios(request):
     return render(request, 'paginas/servicios.html')
 
 # REGISTRAR USUARIO
+
 def Registro(request):
-    if request.method == 'POST':
-        form = RegistroForm(request.POST)
-        if form.is_valid():
-            try:
-                user = form.save()
-                user.refresh_from_db() 
-                auth_login(request, user)
-                messages.success(request, '¡Registro exitoso! Bienvenido a AutoFixChile.')
-                return redirect('Inicio')
-            except IntegrityError:
-                messages.error(request, 'El RUN o email ya está registrado. Elige otro.')
-                form.add_error(None, 'Error: RUN o email duplicado.')
-            except ValueError as e:
-                messages.error(request, f'Error en los datos: {str(e)}')
-                form.add_error(None, str(e))
-            except Exception as e:
-                messages.error(request, f'Error inesperado al registrar: {str(e)}')
-                form.add_error(None, 'Error interno. Intenta de nuevo.')
+      form = RegistroForm()
+      if request.method == 'POST':
+          form = RegistroForm(request.POST)
+          if form.is_valid():
+              user = form.save()
+              cliente = Cliente.objects.create(
+                  user=user,
+                  run=form.cleaned_data.get('run', ''),
+                  nombre=form.cleaned_data.get('nombre', ''),
+                  apellido=form.cleaned_data.get('apellido', ''),
+                  direccion=form.cleaned_data.get('direccion', ''),
+                  telefono=form.cleaned_data.get('telefono', ''),
+                  fecha_nacimiento=form.cleaned_data.get('fecha_nacimiento', None),
 
-        messages.error(request, 'ERROR FORMULARIO')
-    else:
+              )
+              auth_login(request, user)
+              messages.success(request, 'Registro exitoso. Bienvenido!')
+              return redirect('Inicio')
 
-        form = RegistroForm()
-        return render(request, 'usuario/registro.html')
+      return render(request, 'usuario/registro.html', {'form': form})
 
 # INICIAR SESION
 def Login(request):
     if request.method == 'POST':
-        form = LoginForm(request, data=request.POST) 
+        form = LoginForm(request, data=request.POST)
         if form.is_valid():
-            user = form.get_user()  
-            auth_login(request, user)  
+            user = form.get_user()
+            auth_login(request, user)
             messages.success(request, f'¡Bienvenido, {user.nombre}')
             if user.is_staff:
               return redirect('/admin')
             else:
-             return redirect('Inicio') 
+             return redirect('Inicio')
         else:
             messages.error(request, 'ERRORES EN EL FORMULARIO')
             for field, errors in form.errors.items():
@@ -77,25 +75,25 @@ def Login(request):
 
 # CERRAR SESION
 def Logout(request):
-    
+
     auth_logout(request)
-    messages.success(request, 'Sesión cerrada exitosamente') 
+    messages.success(request, 'Sesión cerrada exitosamente')
     return redirect('Login')
 
 # INICIO DE SESION REQUERIDO
 @login_required
 def Perfil(request):
-    user = request.user 
-    
+    user = request.user
+
     if request.method == 'POST':
-        form = PerfilForm(request.POST, instance=user) 
+        form = PerfilForm(request.POST, instance=user)
         if form.is_valid():
             try:
-                form.save() 
+                form.save()
                 messages.success(request, 'Perfil actualizado exitosamente')
                 return redirect('Perfil')
             except Exception as e:
-                messages.error(request, f'Error al actualizar: {str(e)}') 
+                messages.error(request, f'Error al actualizar: {str(e)}')
         else:
             messages.error(request, 'Por favor corrige los errores en el formulario.')
     else:
@@ -106,44 +104,52 @@ def Perfil(request):
     }
     return render(request, 'usuario/perfil.html', context)
 
-# REGISTRAR VEHICULO
+#REGISTRAR VEHICULO
+
 @login_required
-def Contratacion(request):  
-    try:
-        cliente_instance = Cliente.objects.get(run_cliente=request.user.run)
-    except Cliente.DoesNotExist:
-        messages.error(request, 'Usuario no Existe ')
+def Contratacion(request):
+    if not hasattr(request.user, 'run_cliente') or not request.user.run_cliente:
+        messages.error(request, 'Tu cuenta no tiene RUN asignado. Contacta al administrador.')
         return redirect('Inicio')
-    
+
     if request.method == 'POST':
         form = VehiculoForm(request.POST)
         if form.is_valid():
             try:
-                vehiculo = form.save(cliente_instance = cliente_instance)
-                messages.success(request, f'Vehículo {vehiculo.patente} ({vehiculo.marca} {vehiculo.modelo}) registrado para {form.cleaned_data["nombre_cliente"]}')
+                # Guardar con mecánico auto-asignado (pasa request.user al save)
+                vehiculo = form.save(mecanico=request.user)
+                cliente_nombre = form.cleaned_data['nombre_cliente']
+                messages.success(
+                    request, 
+                    f'Vehículo {vehiculo.patente} ({vehiculo.marca} {vehiculo.modelo}) '
+                    f'registrado exitosamente para el cliente {cliente_nombre}.'
+                )
                 return redirect('Inicio')
             except Exception as e:
-                messages.error(request, f'Error al guardar: {str(e)}')
+                messages.error(request, f'Error al guardar el vehículo: {str(e)}. Intenta de nuevo.')
+                # Opcional: loguea el error con logger
         else:
-            messages.error(request, 'Corrige los errores en el formulario.')
+            # Errores específicos del form
+            errores = [str(err) for field in form for err in field.errors]
+            messages.error(request, f'Corrige los errores en el formulario: {" | ".join(errores)}')
     else:
         form = VehiculoForm()
-    
+
+    # Context: Form + info del mecánico (para HTML)
     context = {
         'form': form,
-        'nombre_cliente': f"{request.user.nombre} {request.user.apellido} ({request.user.run})"
+        'mecanico_nombre': f"{request.user.nombre} {request.user.apellido} ({request.user.run_cliente})"
     }
     return render(request, 'paginas/contratacion.html', context)
 
-def buscar_cliente(request):
-    if request.method == 'GET':
-        run_cliente = request.GET.get('run_cliente', '').strip()
-        try:
-            cliente = Cliente.objects.get(run_cliente = run_cliente)
-            return JsonResponse({'existe': True, 'nombre': f"{cliente.nombre} {cliente.apellido}"})
-        except Cliente.DoesNotExist:
-            return JsonResponse({'existe': False, 'nombre': '', 'error': 'RUN no encontrado.'})
-    return JsonResponse({'error': 'Método no permitido.'})
+
+@csrf_exempt  # Solo para GET
+def cliente_by_run(request, run):
+    try:
+        cliente = Cliente.objects.get(run_cliente=run)
+        return JsonResponse({'nombre': cliente.nombre})
+    except Cliente.DoesNotExist:
+        return JsonResponse({'nombre': ''}, status=404)
 
 # RECUPERAR CONTRASEÑA
 
@@ -154,15 +160,15 @@ def recuperar(request):
             run = form.cleaned_data['run']
             email = form.cleaned_data['email']
             user = Cliente.objects.get(run=run, email=email)
-            
+
             # Genera token
             token = default_token_generator.make_token(user)
             uid = urlsafe_base64_encode(force_bytes(user.pk))
-            
+
             reset_url = request.build_absolute_uri(
                 reverse('reset_password_confirm', kwargs={'uidb64': uid, 'token': token})
             )
-            
+
             # Envía email
             subject = 'Recuperación de Contraseña - AutoFixChile'
             message = f"""
@@ -180,14 +186,14 @@ def recuperar(request):
                 [email],
                 fail_silently=False,
             )
-            
+
             messages.success(request, 'Hemos enviado un email con instrucciones para restablecer tu contraseña. Revisa tu bandeja (incluyendo spam).')
             return redirect('Login')
         else:
             messages.error(request, 'Por favor corrige los errores.')
     else:
         form = RecuperarPasswordForm()
-    
+
     return render(request, 'usuario/recuperar.html', {'form': form})
 
 def recuperarconfirmar(request, uidb64, token):
@@ -196,7 +202,7 @@ def recuperarconfirmar(request, uidb64, token):
         user = get_object_or_404(Cliente, run=uid)
     except (TypeError, ValueError, OverflowError):
         user = None
-    
+
     if user is not None and default_token_generator.check_token(user, token):
         if request.method == 'POST':
             form = ResetPasswordForm(user, request.POST)

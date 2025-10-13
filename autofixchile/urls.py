@@ -11,9 +11,9 @@ router.register(r'atencion', AtencionViewSet)
 
 urlpatterns = [
     path('api/', include(router.urls)),
-    path('Inicio', Inicio, name='Inicio'),
+    path('inicio', views.Inicio, name='Inicio'),
     path('Inicio/Contratacion', views.Contratacion, name='Contratacion'),
-    path('buscar-cliente/', views.buscar_cliente, name='buscar_cliente'),
+    path('api/cliente-by-run/<str:run>/', views.cliente_by_run, name='cliente_by_run'),
     path('Inicio/Contacto', Contacto, name= 'Contacto'),
     path('Inicio/Servicios', Servicios, name= 'Servicios'),
     path('Inicio/Usuarios/Login', Login, name= 'Login'),

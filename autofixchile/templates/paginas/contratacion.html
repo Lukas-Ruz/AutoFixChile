@@ -1,159 +1,214 @@
-{% extends "base.html" %} 
+{% extends "base.html" %}
 {% load static %}
 
-{% block content %} 
+{% block content %}
 
-{% if messages%} 
-{% for message in messages %}
-<div
-  class="alert alert-{{ message.tags }} alert-dismissible fade show"
-  role="alert"
->
-  {{ message }}
-  <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-</div>
-{% endfor %}
-{% endif %} 
+<!-- Estilos adicionales para evitar superposiciones en checkboxes -->
+<style>
+  .areas-container {
+    max-height: none;
+    padding: 15px;
+    border: 1px solid #dee2e6;
+    border-radius: 0.375rem;
+    background-color: #f8f9fa;
+  }
+  .form-check {
+    margin-bottom: 0.75rem;
+  }
+  .form-check:last-child {
+    margin-bottom: 0;
+  }
+  .form-check-input:checked {
+    background-color: #0d6efd;
+    border-color: #0d6efd;
+  }
+  .is-invalid .form-check-input {
+    border-color: #dc3545;
+  }
+</style>
 
-{% if form.non_field_errors %}
-<div class="alert alert-danger alert-dismissible fade show" role="alert">
-  {{ form.non_field_errors }}
-  <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-</div>
+<!-- Mensajes globales -->
+{% if messages %}
+  {% for message in messages %}
+    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+      {{ message }}
+      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+    </div>
+  {% endfor %}
 {% endif %}
 
-<!-- Formulario ingreso vehiculo -->
-<div
-  class="container mt-5"
-  style="
-    background-color: white;
-    border-radius: 5px;
-    height: 50rem;
-    max-width: 600px;
-  "
->
-  <h2 style="text-align: center">Registrar Vehículo</h2>
-  <form
-    id="VehiculoForm"
-    method="POST"
-    action="{% url 'Contratacion' %}"
-    novalidate
-  >
-    {% csrf_token %}
+<!-- Errores no de campo -->
+{% if form.non_field_errors %}
+  <div class="alert alert-danger alert-dismissible fade show" role="alert">
+    {{ form.non_field_errors }}
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+  </div>
+{% endif %}
 
-    <div class="mb-3">
-      <label for="{{ form.patente.id_for_label }}" class="form-label"
-        >{{ form.patente.label }}</label
-      >
-      {{ form.patente }} 
-      
-      {% if form.patente.errors %}
-      <div class="invalid-feedback d-block">{{ form.patente.errors }}</div>
-      {% endif %}
-      <div class="invalid-feedback">
-        Por favor ingresa la patente (6 caracteres, ej. ABC123).
+<!-- Contenedor responsive -->
+<div class="container mt-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-8 col-md-10">
+      <div class="card shadow-sm" style="border-radius: 10px; background-color: white;">
+        <div class="card-body p-4">
+          <h2 class="text-center mb-4">Registrar Vehículo</h2>
+          
+          <form id="VehiculoForm" method="POST" action="{% url 'Contratacion' %}" novalidate>
+            {% csrf_token %}
+
+            <!-- Patente -->
+            <div class="mb-3">
+              <label for="{{ form.patente.id_for_label }}" class="form-label">{{ form.patente.label }}</label>
+              {{ form.patente }}
+              {% if form.patente.errors %}
+                <div class="invalid-feedback d-block">{{ form.patente.errors }}</div>
+              {% endif %}
+              <div class="invalid-feedback">Patente con formato inválido (ej: AB1234). Debe tener 6 caracteres alfanuméricos.</div>
+            </div>
+
+            <!-- Marca -->
+            <div class="mb-3">
+              <label for="{{ form.marca.id_for_label }}" class="form-label">{{ form.marca.label }}</label>
+              {{ form.marca }}
+              {% if form.marca.errors %}
+                <div class="invalid-feedback d-block">{{ form.marca.errors }}</div>
+              {% endif %}
+              <div class="invalid-feedback">Por favor ingresa la marca del vehículo.</div>
+            </div>
+
+            <!-- Modelo -->
+            <div class="mb-3">
+              <label for="{{ form.modelo.id_for_label }}" class="form-label">{{ form.modelo.label }}</label>
+              {{ form.modelo }}
+              {% if form.modelo.errors %}
+                <div class="invalid-feedback d-block">{{ form.modelo.errors }}</div>
+              {% endif %}
+              <div class="invalid-feedback">Por favor ingresa el modelo del vehículo.</div>
+            </div>
+
+            <!-- Fecha Encargo -->
+            <div class="mb-3">
+              <label for="{{ form.fecha_encargo.id_for_label }}" class="form-label">{{ form.fecha_encargo.label }}</label>
+              {{ form.fecha_encargo }}
+              {% if form.fecha_encargo.errors %}
+                <div class="invalid-feedback d-block">{{ form.fecha_encargo.errors }}</div>
+              {% endif %}
+              <div class="invalid-feedback">Por favor selecciona la fecha de encargo.</div>
+            </div>
+
+            <!-- RUN Cliente -->
+            <div class="mb-3">
+              <label for="{{ form.run_cliente.id_for_label }}" class="form-label">{{ form.run_cliente.label }}</label>
+              {{ form.run_cliente }}
+              {% if form.run_cliente.errors %}
+                <div class="invalid-feedback d-block">{{ form.run_cliente.errors }}</div>
+              {% endif %}
+              <div class="invalid-feedback">Ingresa un RUN válido (ej: 12345678-0) que exista en el sistema.</div>
+               <small class="form-text text-muted">Confirma tu run</small>
+            </div>
+
+            <!-- Áreas -->
+            <div class="mb-2">
+              <label class="form-label">{{ form.areas.label }}</label>
+              <div class="areas-container">
+                {% for value, label in form.areas.field.choices %}
+                  <div class="form-check">
+                    <input class="form-check-input area-checkbox" 
+                           type="checkbox" 
+                           name="{{ form.areas.name }}" 
+                           id="id_{{ form.areas.name }}_{{ forloop.counter0 }}" 
+                           value="{{ value }}"
+                           {% if value in form.areas.value %}checked{% endif %}>
+                    <label class="form-check-label" for="id_{{ form.areas.name }}_{{ forloop.counter0 }}">
+                      {{ label }}
+                    </label>
+                  </div>
+                {% endfor %}
+              </div>
+              {% if form.areas.errors %}
+                <div class="invalid-feedback d-block" id="areasError">{{ form.areas.errors }}</div>
+              {% endif %}
+              <div class="invalid-feedback" id="areasCustomError" style="display: none;">
+                Selecciona entre 1 y 4 áreas de trabajo.
+              </div>
+              <small class="form-text text-muted">{{ form.areas.help_text }}</small>
+            </div>
+
+            <div class="mb-4">
+              <label class="form-label">Usuario</label>
+              <input type="text" class="form-control" value="{{ mecanico_nombre|default:'Auto-asignado' }}" disabled readonly />
+              <small class="form-text text-muted">Basado en tu sesión de usuario.</small>
+            </div>
+
+            <!-- Submit -->
+            <div class="d-grid">
+              <button type="submit" class="btn btn-primary btn-lg">Registrar Vehículo</button>
+            </div>
+          </form>
+        </div>
       </div>
     </div>
-
-    <div class="mb-3">
-      <label for="{{ form.marca.id_for_label }}" class="form-label"
-        >{{ form.marca.label }}</label
-      >
-      {{ form.marca }}
-      
-      {% if form.marca.errors %}
-      <div class="invalid-feedback d-block">{{ form.marca.errors }}</div>
-      {% endif %}
-      <div class="invalid-feedback">Por favor ingresa la marca.</div>
-    </div>
-
-    <div class="mb-3">
-      <label for="{{ form.modelo.id_for_label }}" class="form-label"
-        >{{ form.modelo.label }}</label
-      >
-      {{ form.modelo }} 
-      
-      {% if form.modelo.errors %}
-      <div class="invalid-feedback d-block">{{ form.modelo.errors }}</div>
-      {% endif %}
-      <div class="invalid-feedback">Por favor ingresa el modelo.</div>
-    </div>
-
-    <div class="mb-3">
-      <label for="{{ form.fecha_encargo.id_for_label }}" class="form-label"
-        >{{ form.fecha_encargo.label }}</label
-      >
-      {{ form.fecha_encargo }} 
-      
-      {% if form.fecha_encargo.errors %}
-      <div class="invalid-feedback d-block">
-        {{ form.fecha_encargo.errors }}
-      </div>
-      {% endif %}
-      <div class="invalid-feedback">Por favor ingresa la fecha de encargo.</div>
-    </div>
-
-    <div class="mb-3">
-      <label for="{{ form.run.id_for_label }}" class="form-label"
-        >{{ form.run.label }}</label
-      >
-      {{ form.run }}
-      
-      {% if form.run.errors %}
-      <div class="invalid-feedback d-block">{{ form.run.errors }}</div>
-      {% endif %}
-      <div class="invalid-feedback">
-        Formato RUN inválido. Debe ser 00000000-0 y existir en clientes.
-      </div>
-    </div>
-
-    <div class="mb-3">
-      <label for="{{ form.nombre_cliente.id_for_label }}" class="form-label"
-        >{{ form.nombre_cliente.label }}</label
-      >
-      {{ form.nombre_cliente }}
-      
-      {% if form.nombre_cliente.errors %}
-      <div class="invalid-feedback d-block">
-        {{ form.nombre_cliente.errors }}
-      </div>
-      {% endif %}
-      <div class="form-text">Se auto-llena al ingresar RUN válido.</div>
-    </div>
-
-    <div class="mb-3">
-      <label class="form-label">Áreas de trabajo (selecciona hasta 4)</label>
-      {{ form.areas }}
-      
-      {% if form.areas.errors %}
-      <div class="invalid-feedback d-block" id="areasError">
-        {{ form.areas.errors }}
-      </div>
-      {% endif %}
-
-      <div
-        class="invalid-feedback d-block"
-        id="areasError"
-        style="display: none"
-      >
-        Debes seleccionar al menos una área y máximo cuatro.
-      </div>
-      <small class="form-text text-muted">{{ form.areas.help_text }}</small>
-    </div>
-
-    <div class="mb-3">
-      <label class="form-label">Mecánico a Cargo</label>
-      <input
-        type="text"
-        class="form-control"
-        value="{{ mecanico_nombre }}"
-        disabled
-        readonly
-      />
-      <small class="form-text text-muted"
-        >Auto-asignado (basado en tu sesión).</small
-      >
-    </div>
-  </form>
+  </div>
 </div>
+
+<!-- JS para optimizaciones: límite areas -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // Límite de 4 checkboxes en areas (actualizado para wrappers form-check)
+  const checkboxes = document.querySelectorAll('.area-checkbox');
+  const maxSelections = 4;
+  const errorDiv = document.getElementById('areasCustomError');
+  const areasContainer = document.querySelector('.areas-container');
+
+  checkboxes.forEach(checkbox => {
+    checkbox.addEventListener('change', function() {
+      const checkedCount = Array.from(checkboxes).filter(cb => cb.checked).length;
+      if (checkedCount > maxSelections) {
+        this.checked = false;
+        this.closest('.form-check').classList.add('is-invalid');
+        errorDiv.style.display = 'block';
+        setTimeout(() => {
+          errorDiv.style.display = 'none';
+          this.closest('.form-check').classList.remove('is-invalid');
+        }, 3000);
+      } else {
+        errorDiv.style.display = 'none';
+        areasContainer.classList.remove('is-invalid');
+      }
+    });
+  });
+
+  // Auto-fill nombre_cliente via AJAX al blur en RUN
+  const runInput = document.getElementById('runCliente');
+  const nombreInput = document.getElementById('nombreCliente');
+  if (runInput && nombreInput) {
+    runInput.addEventListener('blur', function() {
+      const run = this.value.trim();
+      if (run && run.length >= 7) {
+        fetch(`/api/cliente-by-run/${encodeURIComponent(run)}/`, {
+          method: 'GET',
+          headers: { 'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value }
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.nombre) {
+            nombreInput.value = data.nombre;
+            nombreInput.classList.add('is-valid');
+            nombreInput.classList.remove('is-invalid');
+          } else {
+            nombreInput.value = '';
+            nombreInput.classList.add('is-invalid');
+            alert('RUN no encontrado. Verifica el número.');
+          }
+        })
+        .catch(error => {
+          console.error('Error en AJAX:', error);
+          alert('Error al buscar cliente. Intenta de nuevo.');
+        });
+      }
+    });
+  }
+});
+</script>
+
 {% endblock content %}

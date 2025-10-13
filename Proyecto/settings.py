@@ -25,27 +25,27 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-s*u(b+=dnhns5r--apuw+*!#l+=3%@*2k-kikn7i8#b3+**&e5'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
-ALLOWED_HOSTS = ['LukasRuz.pythonanywhere.com', '127.0.0.1']
+ALLOWED_HOSTS = ['lukasruz.pythonanywhere.com', 'www.lukasruz.pythonanywhere.com' '127.0.0.1']
 
 
 # Application definition
 
 INSTALLED_APPS = [
-    'django.contrib.admin',          
-    'django.contrib.auth',           
-    'django.contrib.contenttypes',   
-    'django.contrib.sessions',       
-    'django.contrib.messages',       
-    'django.contrib.staticfiles',   
-    'django.contrib.sites',          
+    'django.contrib.admin',
+    'django.contrib.auth',
+    'django.contrib.contenttypes',
+    'django.contrib.sessions',
+    'django.contrib.messages',
+    'django.contrib.staticfiles',
+    'django.contrib.sites',
     'autofixchile',
     'rest_framework',
     'allauth',
-    'allauth.account',             
-    'allauth.socialaccount',  
-    'allauth.socialaccount.providers.google', 
+    'allauth.account',
+    'allauth.socialaccount',
+    'allauth.socialaccount.providers.google',
 ]
 
 MIDDLEWARE = [
@@ -84,18 +84,18 @@ WSGI_APPLICATION = 'Proyecto.wsgi.application'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.oracle',
-        'NAME': '127.0.0.1:1521/xe',  #Al crear la base de datos local lo hice con xe en vez de orcl
-        'USER': 'autofixadmin',
-        'PASSWORD': 'autofixchile_123',
-        'TEST': {
-            'USER': 'default_test',
-            'TABLESPACE': 'default_test_tbls',
-            'TBLSPACE_TMP': 'default_test_tbls_tmp'
-        }
-    }
-}
+      'default': {
+          'ENGINE': 'django.db.backends.mysql',
+          'NAME': 'LukasRuz$autofixdb',
+          'USER': 'LukasRuz',
+          'PASSWORD': 'autofixchile123',
+          'HOST': 'LukasRuz.mysql.pythonanywhere-services.com',
+          'PORT': '3306',
+          'OPTIONS': {
+              'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
+          },
+      }
+  }
 
 
 # Password validation
@@ -132,10 +132,9 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
-MEDIA_URL = 'media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
@@ -171,16 +170,14 @@ ACCOUNT_AUTHENTICATION_METHOD = 'email'
 ACCOUNT_EMAIL_VERIFICATION = 'none'
 SOCIALACCOUNT_QUERY_EMAIL = True
 SOCIALACCOUNT_PROVIDERS = {
-    'google': {
-        'SCOPE': [
-            'profile',
-            'email',
-        ],
-        'AUTH_PARAMS': {
-            'access_type': 'offline',
-        }
-    }
-}
+      'google': {
+          'APP': {
+              'client_id': '46931858023-rifdkgu27l20rq86grgvtac7drrebocp.apps.googleusercontent.com',
+              'secret': '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',
+              'key': ''
+          }
+      }
+  }
 
 # Credenciales de Google
 SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = '46931858023-rifdkgu27l20rq86grgvtac7drrebocp.apps.googleusercontent.com'
@@ -201,4 +198,9 @@ REST_FRAMEWORK = {
     'PAGE_SIZE': 10
 }
 
-#secret key ibmxc-k4-wx*nzv9g$i@6m45o^3(%635(e0h8v4mqb9jmqskv1
+#Proyecto/settings.py
+#Proyecto/urls.py
+#autofixchile/templates/contratacion.html
+#autofixchile/forms.py
+#autofixchile/models.py
+#autofixchile/views.py

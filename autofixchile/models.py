@@ -1,5 +1,5 @@
 from django.db import models
-from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin 
+from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 from django.utils import timezone
 
 # Create your models here.
@@ -23,8 +23,8 @@ class UserManager(BaseUserManager):
         return self.create_user(run, password, **extra_fields)
 
 class Cliente(AbstractBaseUser , PermissionsMixin, models.Model):
-    
-    run = models.CharField(db_column='RUN_CLIENTE', max_length=20, unique=True, primary_key=True)
+
+    run_cliente = models.CharField(db_column='RUN_CLIENTE', max_length=20, unique=True, primary_key=True)
     nombre = models.CharField(db_column='NOMBRE', max_length=100)
     apellido = models.CharField(db_column='APELLIDO', max_length=100)
     email = models.EmailField(db_column='EMAIL', unique=True, max_length=255)
@@ -32,17 +32,17 @@ class Cliente(AbstractBaseUser , PermissionsMixin, models.Model):
     telefono = models.CharField(db_column='TELEFONO', max_length=20, blank=True)
     direccion = models.TextField(db_column='DIRECCION', blank=True)
     password = models.CharField(db_column='PASSWORD', max_length=128)
- 
+
     is_active = models.BooleanField(db_column='IS_ACTIVE', default=True, null=True, blank=True)
     is_staff = models.BooleanField(db_column='IS_STAFF', default=False, null=True, blank=True)
     is_superuser = models.BooleanField(db_column='IS_SUPERUSER', default=False, null=True, blank=True)
-    
+
     date_joined = models.DateTimeField(db_column='DATE_JOINED', default=timezone.now, null=True, blank=True)
     last_login = models.DateTimeField(db_column='LAST_LOGIN', null=True, blank=True)
 
     objects = UserManager()
-    USERNAME_FIELD = 'run'
-    REQUIRED_FIELDS = ['nombre', 'apellido', 'email']
+    USERNAME_FIELD = 'run_cliente'
+    REQUIRED_FIELDS = ['nombre', 'apellido']
 
     class Meta:
         db_table = 'AUTOFIXCHILE_CLIENTE'
@@ -51,7 +51,7 @@ class Cliente(AbstractBaseUser , PermissionsMixin, models.Model):
         managed = True
 
     def __str__(self):
-        return f"{self.nombre} {self.apellido} (RUN: {self.run})"
+        return f"{self.nombre} {self.apellido} (RUN: {self.run_cliente})"
 
 
 class Especialidad(models.Model):
